@@ -13,7 +13,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static("public"));
 
-mongoose.connect("mongodb://localhost/newsscrapedb", { useNewUrlParser: true });
+//In server.js, you need to have port point to process.env.PORT:
+var PORT = process.env.PORT || 3000;
+// you need to connect mongo from heroku
+var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/newsscrapedb";
+// you need to store it in a variable
+mongoose.connect(MONGODB_URI);
 
 app.get("/scrape", function(req, res){
     axios.get("https://www.vox.com/the-highlight").then(function(response){
