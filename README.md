@@ -1,1 +1,1 @@
-# mongoose-hw
+# NewsScraper
