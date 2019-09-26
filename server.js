@@ -13,26 +13,51 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static("public"));
 
-//In server.js, you need to have port point to process.env.PORT:
-var PORT = process.env.PORT || 3000;
-// you need to connect mongo from heroku
-var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/newsscrapedb";
-// you need to store it in a variable
-mongoose.connect(MONGODB_URI);
+mongoose.connect("mongodb://localhost/newsscrapedb", { useNewUrlParser: true });
 
 app.get("/scrape", function(req, res){
     axios.get("https://www.vox.com/the-highlight").then(function(response){
         var $ = cheerio.load(response.data);
 
-        $("h2.c-entry-box--compact__title").each(function(i, element) {
+        $(".c-compact-river__entry").each(function(i, element) {
             var result = {};
 
             result.title = $(this)
+            .find("div.c-entry-box--compact")
+            .find("div.c-entry-box--compact__body")
+            .find("h2.c-entry-box--compact__title")
             .children("a")
             .text();
+
             result.link = $(this)
+            .find("div.c-entry-box--compact")
+            .find("div.c-entry-box--compact__body")
+            .find("h2.c-entry-box--compact__title")
             .children("a")
             .attr("href");
+
+            result.image = $(this)
+            .find("div.c-entry-box--compact")
+            .find("a.c-entry-box--compact__image-wrapper")
+            .find("div.c-entry-box--compact__image")
+            .find("noscript")
+            .text();           
+
+            result.articleDate = $(this)
+            .find("div.c-entry-box--compact")
+            .find("div.c-entry-box--compact__body")
+            .find("div.c-byline")
+            .find("span.c-byline__item")
+            .find("time.c-byline__item")
+            .text();
+
+            result.author = $(this)
+            .find("div.c-entry-box--compact")
+            .find("div.c-entry-box--compact__body")
+            .find("div.c-byline")
+            .find("span.c-byline__item")
+            .find("span.c-byline__author-name")
+            .text();
 
             db.Article.create(result)
             .then(function(dbArticle){
@@ -80,6 +105,25 @@ app.post("/articles/:id", function(req, res) {
     res.json(err);
   });
 });
+
+app.get("/notes/:id", function(req, res) {
+  db.Note.find({ articleId: req.params.id})
+  .then(function(dbNote) {
+    res.json(dbNote)
+  })
+  .catch(function(err){
+    res.json(err);
+  });
+});
+
+app.delete("/delete/:id", function(req, res) {
+  console.log("path hit");
+  db.Note.remove({ _id: req.params.id })
+  .then(function(){
+    console.log("note removed from db");
+    res.sendStatus(200);
+  })
+})
 
 app.listen(PORT, function() {
     console.log("Listening on http://localhost:" + PORT);

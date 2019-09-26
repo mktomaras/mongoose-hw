@@ -5,15 +5,28 @@ var Schema = mongoose.Schema;
 var SaveArticles = new Schema({
     title: {
         type: String, 
-        required: true
+        required: true,
+        unique: true
     },
     link: {
         type: String,
         required: true
     },
+    image: {
+        type: String,
+        required: true
+    },
+    articleDate: {
+        type: String,
+        required: true
+    },
+    author: {
+        type: String,
+        required: true
+    },
     note: {
         type: Schema.Types.ObjectId,
-        ref: "Notes"
+        ref: "Note"
     }
 });
 
