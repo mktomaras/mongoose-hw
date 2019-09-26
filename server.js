@@ -13,7 +13,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static("public"));
 
-mongoose.connect("mongodb://localhost/newsscrapedb", { useNewUrlParser: true });
+mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/newsscrapedb", { useNewUrlParser: true });
+mongoose.connect(MONGODB_URI);
 
 app.get("/scrape", function(req, res){
     axios.get("https://www.vox.com/the-highlight").then(function(response){
